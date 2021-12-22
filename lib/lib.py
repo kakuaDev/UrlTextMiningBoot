@@ -1,4 +1,5 @@
 from urllib.request import urlopen
+import requests
 from bs4 import BeautifulSoup
 import re
 
@@ -10,25 +11,31 @@ def conteo_palabras(url):
     :param url: URL
     :return: Lista de objetos (palabra, # de ocurrencias)
     """
-    html = urlopen(url).read()
-    soup = BeautifulSoup(html, features="html.parser")
+    try:
+        req = requests.get(url)
+        if req.status_code != 200:
+            return None
+        html = req.text
+        soup = BeautifulSoup(html, features="html.parser")
 
-    for script in soup(["script", "style"]):
-        script.decompose()
+        for script in soup(["script", "style"]):
+            script.decompose()
 
-    raw_text = soup.text
+        raw_text = soup.text
 
-    # Eliminar caracteres especiales
-    text = re.sub('[^a-zA-Z0-9 \n\.]', '', raw_text)
-    words = text.split()
-    words_count = []
-    _words = []
-    for word in words:
-        if word not in _words:
-            _words.append(word)
-            words_count.append([word, text.count(word)])
-    words_count = sorted(words_count, key=lambda x: x[1], reverse=True)
-    return words_count
+        # Eliminar caracteres especiales
+        text = re.sub('[^a-zA-Z0-9 \n\.]', '', raw_text)
+        words = text.split()
+        words_count = []
+        _words = []
+        for word in words:
+            if word not in _words:
+                _words.append(word)
+                words_count.append([word, text.count(word)])
+        words_count = sorted(words_count, key=lambda x: x[1], reverse=True)
+        return words_count
+    except Exception as e:
+        return None
 
 
 if __name__ == "__main__":

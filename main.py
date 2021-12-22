@@ -14,9 +14,12 @@ def count_words():
     :return: Lista de objetos (palabra, # de ocurrencias)
     """
     url = request.args.get('url')
-    return {
-        "Conteo": conteo_palabras(url)
-    }
+    words_count = conteo_palabras(url)
+    if words_count is None:
+        return {
+            "error": "No se pudo acceder al dominio: {url}. URL inválida".format(url=url)
+        }
+    return {"conteo": words_count}
 
 
 @app.route("/pretty/conteo_palabras")
@@ -32,6 +35,8 @@ def count_words_pretty():
     _n = request.args.get('n')
     n = int(_n) if _n.isnumeric() else None
     words_count = conteo_palabras(url)
+    if words_count is None:
+        return "No se pudo acceder al dominio: {url}. URL inválida".format(url=url)
     disp = len(words_count) if n is None or n > len(words_count) else n
     pretty = [
         "<b>{word}:</b> {count}".format(word=i, count=j)
